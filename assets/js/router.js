@@ -1,14 +1,30 @@
 import { logger } from './logger.js';
 
-const routes = new Map();
+const routes = [];
 let notFoundHandler = () => logger.warn('router: no notFound handler registered');
 
-export function defineRoute(path, handler) {
-  if (path === 'notFound') {
+function compilePattern(pattern) {
+  const paramNames = [];
+  const regexBody = pattern
+    .split('/')
+    .map((segment) => {
+      if (segment.startsWith(':')) {
+        paramNames.push(segment.slice(1));
+        return '([^/]+)';
+      }
+      return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    })
+    .join('/');
+  return { regex: new RegExp(`^${regexBody}$`), paramNames };
+}
+
+export function defineRoute(pattern, handler) {
+  if (pattern === 'notFound') {
     notFoundHandler = handler;
     return;
   }
-  routes.set(path, handler);
+  const { regex, paramNames } = compilePattern(pattern);
+  routes.push({ regex, paramNames, handler });
 }
 
 export function go(path) {
@@ -16,16 +32,21 @@ export function go(path) {
 }
 
 function currentPath() {
-  const hash = location.hash.replace(/^#\/?/, '');
-  return hash;
+  return location.hash.replace(/^#\/?/, '');
 }
 
 function handleNavigation() {
   const path = currentPath();
-  const handler = routes.get(path);
-  if (handler) {
-    handler();
-    return;
+  for (const route of routes) {
+    const match = path.match(route.regex);
+    if (match) {
+      const params = {};
+      route.paramNames.forEach((name, i) => {
+        params[name] = decodeURIComponent(match[i + 1]);
+      });
+      route.handler(params);
+      return;
+    }
   }
   notFoundHandler();
 }
