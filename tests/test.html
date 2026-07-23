@@ -11,6 +11,8 @@
 <script type="module">
 import { parseCsv } from '../assets/js/csv-parser.js';
 import { validateReadingRow, validateReadingBatch } from '../assets/js/validator.js';
+import { getSettings, saveSettings, getAttempts, appendAttempt, clearAll } from '../assets/js/store.js';
+import { startSession } from '../assets/js/exercise-engine.js';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message || 'assertion failed');
@@ -124,6 +126,58 @@ await it('validateReadingBatch descarta IDs duplicados con un warning', async ()
   const { items, warnings } = validateReadingBatch(rows);
   assert(items.length === 1, `se esperaba 1 item, hubo ${items.length}`);
   assert(warnings.some((w) => w.includes('duplicado')), 'debería avisar del ID duplicado');
+});
+
+await it('saveSettings guarda un valor parcial y mantiene el resto por defecto', async () => {
+  clearAll();
+  saveSettings({ exam: 'PET' });
+  const settings = getSettings();
+  assert(settings.exam === 'PET', `se esperaba exam "PET", se obtuvo "${settings.exam}"`);
+  assert(settings.theme === 'auto', `se esperaba theme "auto", se obtuvo "${settings.theme}"`);
+  assert(settings.fontSize === 'M', `se esperaba fontSize "M", se obtuvo "${settings.fontSize}"`);
+  clearAll();
+});
+
+await it('appendAttempt + pruneAttempts limitan el historial a 200 intentos', async () => {
+  clearAll();
+  for (let i = 0; i < 205; i += 1) {
+    appendAttempt({
+      id: `test-attempt-${i}`,
+      exerciseId: 'RD001',
+      mode: 'practice',
+      startedAt: new Date(Date.now() + i * 1000).toISOString(),
+      result: { correct: i % 5, total: 5, percent: (i % 5) * 20 },
+    });
+  }
+  const attempts = getAttempts();
+  assert(attempts.length === 200, `se esperaban 200 intentos, hubo ${attempts.length}`);
+  clearAll();
+});
+
+await it('clearAll elimina todas las claves "b1.*" de localStorage', async () => {
+  saveSettings({ exam: 'EOI' });
+  clearAll();
+  const remaining = Object.keys(localStorage).filter((k) => k.startsWith('b1.'));
+  assert(remaining.length === 0, `no deberían quedar claves b1.*, quedaron: ${remaining.join(', ')}`);
+});
+
+await it('computeScore calcula el porcentaje correctamente (3 de 4 correctas = 75%)', async () => {
+  const exercise = {
+    preguntas: [
+      { q: 'Q1', options: ['a', 'b'], answer: 0 },
+      { q: 'Q2', options: ['a', 'b'], answer: 1 },
+      { q: 'Q3', options: ['a', 'b'], answer: 0 },
+      { q: 'Q4', options: ['a', 'b'], answer: 1 },
+    ],
+  };
+  const session = startSession(exercise);
+  session.answer(0, 0);
+  session.answer(1, 1);
+  session.answer(2, 0);
+  session.answer(3, 0);
+  const result = session.submit();
+  assert(result.correct === 3, `se esperaban 3 correctas, hubo ${result.correct}`);
+  assert(result.percent === 75, `se esperaba 75%, se obtuvo ${result.percent}%`);
 });
 </script>
 </body>
