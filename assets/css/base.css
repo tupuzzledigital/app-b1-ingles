@@ -45,6 +45,47 @@ input {
   color: var(--color-fg);
 }
 
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-primary-fg);
+  border-color: var(--color-primary);
+}
+
+.btn-secondary {
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: var(--color-primary-fg);
+  border-color: var(--color-danger);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-fg);
+  color: var(--color-bg);
+  font-size: var(--fs-sm);
+  z-index: 1000;
+}
+
+.toast-danger {
+  background-color: var(--color-danger);
+  color: var(--color-primary-fg);
+}
+
 .sr-only {
   position: absolute !important;
   width: 1px;
