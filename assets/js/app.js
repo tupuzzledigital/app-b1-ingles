@@ -1,6 +1,8 @@
 import { logger } from './logger.js';
 import { defineRoute, start } from './router.js';
 import { loadReading } from './content-loader.js';
+import { getAttempts } from './store.js';
+import { renderExercise } from './views/reading-exercise.js';
 
 const TEXTS = {
   welcome: 'Bienvenida',
@@ -10,6 +12,8 @@ const TEXTS = {
   debugValidItems: 'Items válidos',
   debugErrors: 'Errores',
   debugBack: 'Volver',
+  resultTitle: 'Resultado (provisional)',
+  resultNotFound: 'Intento no encontrado',
 };
 
 function renderHome() {
@@ -68,8 +72,32 @@ async function renderDebug() {
   app.append(backLink);
 }
 
+function renderResultPlaceholder(params) {
+  const app = document.getElementById('app');
+  app.replaceChildren();
+
+  const attempt = getAttempts().find((a) => a.id === params.id);
+
+  const h1 = document.createElement('h1');
+  h1.textContent = TEXTS.resultTitle;
+  app.append(h1);
+
+  const pre = document.createElement('pre');
+  pre.textContent = attempt ? JSON.stringify(attempt.result, null, 2) : TEXTS.resultNotFound;
+  app.append(pre);
+
+  const backLink = document.createElement('a');
+  backLink.href = '#/';
+  backLink.textContent = TEXTS.debugBack;
+  app.append(backLink);
+}
+
 defineRoute('', renderHome);
 defineRoute('debug', renderDebug);
+defineRoute('reading/:id', (params) => {
+  renderExercise(document.getElementById('app'), params.id);
+});
+defineRoute('result/:id', renderResultPlaceholder);
 defineRoute('notFound', renderNotFound);
 
 start();

@@ -1,4 +1,4 @@
-const APP_VERSION = 'v0.2.0';
+const APP_VERSION = 'v0.3.0';
 const APP_CACHE = 'b1-app-' + APP_VERSION;
 
 const ASSETS = [
@@ -14,6 +14,10 @@ const ASSETS = [
   '/assets/js/csv-parser.js',
   '/assets/js/validator.js',
   '/assets/js/content-loader.js',
+  '/assets/js/store.js',
+  '/assets/js/ui-components.js',
+  '/assets/js/exercise-engine.js',
+  '/assets/js/views/reading-exercise.js',
   '/assets/vendor/papaparse.min.js',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
