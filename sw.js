@@ -1,4 +1,4 @@
-const APP_VERSION = 'v0.1.2';
+const APP_VERSION = 'v0.2.0';
 const APP_CACHE = 'b1-app-' + APP_VERSION;
 
 const ASSETS = [
@@ -11,9 +11,15 @@ const ASSETS = [
   '/assets/js/app.js',
   '/assets/js/router.js',
   '/assets/js/logger.js',
+  '/assets/js/csv-parser.js',
+  '/assets/js/validator.js',
+  '/assets/js/content-loader.js',
+  '/assets/vendor/papaparse.min.js',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/icon-512-maskable.png',
+  '/content/reading.csv',
+  '/content/version.txt',
 ];
 
 self.addEventListener('install', (event) => {
