@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tests — App B1</title>
+</head>
+<body>
+<h1>Tests</h1>
+<ul id="results"></ul>
+<script src="../assets/vendor/papaparse.min.js"></script>
+<script type="module">
+import { parseCsv } from '../assets/js/csv-parser.js';
+import { validateReadingRow, validateReadingBatch } from '../assets/js/validator.js';
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message || 'assertion failed');
+}
+
+async function it(name, fn) {
+  const li = document.createElement('li');
+  try {
+    await fn();
+    li.textContent = `PASS — ${name}`;
+    li.style.color = 'green';
+  } catch (err) {
+    li.textContent = `FAIL — ${name}: ${err.message}`;
+    li.style.color = 'red';
+  }
+  document.getElementById('results').append(li);
+}
+
+async function loadFixture(name) {
+  const text = await (await fetch(`./fixtures/${name}`)).text();
+  return parseCsv(text).rows;
+}
+
+function validRow(overrides = {}) {
+  return {
+    id: 'RD900',
+    titulo: 'Sample text',
+    examen: 'PET',
+    tema: 'travel',
+    dificultad: '2',
+    texto: 'This is a sample text for testing purposes only.',
+    tipo: 'multiple_choice',
+    preguntas: '[{"q":"Question?","options":["A","B","C"],"answer":0}]',
+    ...overrides,
+  };
+}
+
+await it('parseCsv elimina el BOM inicial', async () => {
+  const { rows, meta } = parseCsv('﻿id,titulo\nRD001,Hello');
+  assert(meta.hasBom === true, 'meta.hasBom debería ser true');
+  assert(Object.keys(rows[0])[0] === 'id', 'la primera cabecera no debería incluir el BOM');
+});
+
+await it('parseCsv detecta el separador ";"', async () => {
+  const { rows, meta } = parseCsv('id;titulo\nRD001;Hello');
+  assert(meta.delimiter === ';', 'el delimitador detectado debería ser ";"');
+  assert(rows[0].titulo === 'Hello', 'la fila debería parsearse usando ";"');
+});
+
+await it('parseCsv ignora filas que empiezan por "#"', async () => {
+  const { rows } = parseCsv('id,titulo\n#comentario,ignorar\nRD001,Hello');
+  assert(rows.length === 1, `se esperaba 1 fila, hubo ${rows.length}`);
+});
+
+await it('reading-valid.csv produce 4 items y 0 errores', async () => {
+  const rows = await loadFixture('reading-valid.csv');
+  const { items, errors } = validateReadingBatch(rows);
+  assert(items.length === 4, `se esperaban 4 items, hubo ${items.length}`);
+  assert(errors.length === 0, `se esperaban 0 errores, hubo ${errors.length}`);
+});
+
+await it('reading-mixed.csv produce 3 items y 2 errores', async () => {
+  const rows = await loadFixture('reading-mixed.csv');
+  const { items, errors } = validateReadingBatch(rows);
+  assert(items.length === 3, `se esperaban 3 items, hubo ${items.length}`);
+  assert(errors.length === 2, `se esperaban 2 errores, hubo ${errors.length}`);
+});
+
+await it('reading-invalid.csv produce 0 items y todo son errores', async () => {
+  const rows = await loadFixture('reading-invalid.csv');
+  const { items, errors } = validateReadingBatch(rows);
+  assert(items.length === 0, `se esperaban 0 items, hubo ${items.length}`);
+  assert(errors.length === rows.length, `se esperaban ${rows.length} errores, hubo ${errors.length}`);
+});
+
+await it('validateReadingRow rechaza "answer" fuera de rango', async () => {
+  const row = validRow({ preguntas: '[{"q":"Question?","options":["A","B"],"answer":5}]' });
+  const result = validateReadingRow(row, 1);
+  assert(result.valid === false, 'la fila debería ser inválida');
+});
+
+await it('validateReadingRow acepta "examen" en minúsculas y lo normaliza', async () => {
+  const row = validRow({ examen: 'pet' });
+  const result = validateReadingRow(row, 1);
+  assert(result.valid === true, 'la fila debería ser válida');
+  assert(result.item.examen === 'PET', `se esperaba "PET", se obtuvo "${result.item.examen}"`);
+});
+
+await it('validateReadingRow normaliza "dificultad" fuera de rango a 2', async () => {
+  const row = validRow({ dificultad: '9' });
+  const result = validateReadingRow(row, 1);
+  assert(result.valid === true, 'la fila debería ser válida');
+  assert(result.item.dificultad === 2, `se esperaba dificultad 2, se obtuvo ${result.item.dificultad}`);
+  assert(result.warnings.length === 1, 'debería añadirse un warning');
+});
+
+await it('validateReadingRow rechaza un campo obligatorio vacío', async () => {
+  const row = validRow({ titulo: '' });
+  const result = validateReadingRow(row, 1);
+  assert(result.valid === false, 'la fila debería ser inválida');
+});
+
+await it('validateReadingRow rechaza "preguntas" con JSON malformado', async () => {
+  const row = validRow({ preguntas: '[{"q":"Question?" "options":["A","B"] "answer":0}]' });
+  const result = validateReadingRow(row, 1);
+  assert(result.valid === false, 'la fila debería ser inválida');
+});
+
+await it('validateReadingBatch descarta IDs duplicados con un warning', async () => {
+  const rows = [validRow({ id: 'RD900' }), validRow({ id: 'RD900', titulo: 'Duplicado' })];
+  const { items, warnings } = validateReadingBatch(rows);
+  assert(items.length === 1, `se esperaba 1 item, hubo ${items.length}`);
+  assert(warnings.some((w) => w.includes('duplicado')), 'debería avisar del ID duplicado');
+});
+</script>
+</body>
+</html>
