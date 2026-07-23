@@ -1,4 +1,4 @@
-const APP_VERSION = 'v0.1.0';
+const APP_VERSION = 'v0.1.1';
 const APP_CACHE = 'b1-app-' + APP_VERSION;
 
 const ASSETS = [
@@ -13,6 +13,7 @@ const ASSETS = [
   '/assets/js/logger.js',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
+  '/assets/icons/icon-512-maskable.png',
 ];
 
 self.addEventListener('install', (event) => {
