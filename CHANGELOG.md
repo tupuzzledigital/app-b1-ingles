@@ -22,3 +22,13 @@
 - Vista de diagnóstico `#/debug`.
 - `content/reading.csv` inicial con 4 textos semilla (uno por tipo de ejercicio) y `content/reading.template.csv`.
 - 12 tests unitarios en `tests/test.html`, verificados en verde.
+
+### Sprint 3 — Store y motor de ejercicios (parte 1)
+
+- `router.js`: soporte de rutas con parámetros (`:id`).
+- `store.js`: `getSettings`/`saveSettings`, `getAttempts`/`appendAttempt` con `pruneAttempts` (límite 200, protegiendo la mejor nota por ejercicio), `clearAll`.
+- `ui-components.js`: `button()` y `toast()`.
+- `exercise-engine.js`: `startSession`/`computeScore` para `multiple_choice` y `true_false`.
+- Vista `reading-exercise.js`: ejercicio completo desde `#/reading/:id`, guarda el intento y navega a `#/result/:id` (placeholder JSON hasta el Sprint 4). Maneja el caso de ejercicio inexistente.
+- 16 tests unitarios en `tests/test.html`, verificados en verde.
+- Verificado en producción: completar un ejercicio real y ver el resultado con score correcto.
