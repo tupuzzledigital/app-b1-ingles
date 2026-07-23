@@ -1,0 +1,2 @@
+id,titulo,examen,tema,dificultad,texto,tipo,preguntas
+RD001,"A weekend in Prague",PET,travel,2,"Prague is a beautiful city in the Czech Republic. Last summer, I visited it with my sister and we had a great time…",multiple_choice,"[{""q"":""Where did the writer go?"",""options"":[""Vienna"",""Prague"",""Budapest"",""Berlin""],""answer"":1,""explanation"":""The first sentence mentions Prague.""}]"
