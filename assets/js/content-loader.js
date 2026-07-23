@@ -10,7 +10,7 @@ async function fetchText(url) {
   return response.text();
 }
 
-export async function loadReading() {
+async function fetchAndValidate() {
   let csvText;
   try {
     csvText = await fetchText('/content/reading.csv');
@@ -30,4 +30,13 @@ export async function loadReading() {
   const { items, errors, warnings } = validateReadingBatch(rows);
 
   return { items, errors, warnings, version };
+}
+
+let cachedPromise = null;
+
+export function loadReading({ force = false } = {}) {
+  if (!cachedPromise || force) {
+    cachedPromise = fetchAndValidate();
+  }
+  return cachedPromise;
 }
