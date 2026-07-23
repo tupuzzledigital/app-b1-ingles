@@ -1,4 +1,4 @@
-const APP_VERSION = 'v0.3.0';
+const APP_VERSION = 'v0.4.0';
 const APP_CACHE = 'b1-app-' + APP_VERSION;
 
 const ASSETS = [
@@ -17,7 +17,11 @@ const ASSETS = [
   '/assets/js/store.js',
   '/assets/js/ui-components.js',
   '/assets/js/exercise-engine.js',
+  '/assets/js/views/home.js',
+  '/assets/js/views/onboarding.js',
+  '/assets/js/views/reading-list.js',
   '/assets/js/views/reading-exercise.js',
+  '/assets/js/views/result.js',
   '/assets/vendor/papaparse.min.js',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',

@@ -1,33 +1,28 @@
 import { logger } from './logger.js';
-import { defineRoute, start } from './router.js';
+import { defineRoute, go, start } from './router.js';
 import { loadReading } from './content-loader.js';
-import { getAttempts } from './store.js';
+import { getSettings } from './store.js';
+import { renderHome } from './views/home.js';
+import { renderOnboarding } from './views/onboarding.js';
+import { renderList } from './views/reading-list.js';
 import { renderExercise } from './views/reading-exercise.js';
+import { renderResult } from './views/result.js';
 
 const TEXTS = {
-  welcome: 'Bienvenida',
   notFound: 'Ruta no encontrada',
   debugTitle: 'Diagnóstico de contenido',
   debugVersion: 'Versión de contenido',
   debugValidItems: 'Items válidos',
   debugErrors: 'Errores',
   debugBack: 'Volver',
-  resultTitle: 'Resultado (provisional)',
-  resultNotFound: 'Intento no encontrado',
 };
 
-function renderHome() {
-  const app = document.getElementById('app');
-  app.replaceChildren();
-  const h1 = document.createElement('h1');
-  h1.textContent = 'App B1';
-  const p = document.createElement('p');
-  p.textContent = TEXTS.welcome;
-  app.append(h1, p);
+function appContainer() {
+  return document.getElementById('app');
 }
 
 function renderNotFound() {
-  const app = document.getElementById('app');
+  const app = appContainer();
   app.replaceChildren();
   const p = document.createElement('p');
   p.textContent = TEXTS.notFound;
@@ -35,7 +30,7 @@ function renderNotFound() {
 }
 
 async function renderDebug() {
-  const app = document.getElementById('app');
+  const app = appContainer();
   app.replaceChildren();
 
   const h1 = document.createElement('h1');
@@ -72,32 +67,20 @@ async function renderDebug() {
   app.append(backLink);
 }
 
-function renderResultPlaceholder(params) {
-  const app = document.getElementById('app');
-  app.replaceChildren();
-
-  const attempt = getAttempts().find((a) => a.id === params.id);
-
-  const h1 = document.createElement('h1');
-  h1.textContent = TEXTS.resultTitle;
-  app.append(h1);
-
-  const pre = document.createElement('pre');
-  pre.textContent = attempt ? JSON.stringify(attempt.result, null, 2) : TEXTS.resultNotFound;
-  app.append(pre);
-
-  const backLink = document.createElement('a');
-  backLink.href = '#/';
-  backLink.textContent = TEXTS.debugBack;
-  app.append(backLink);
+function renderHomeRoute() {
+  if (!getSettings().exam) {
+    go('onboarding');
+    return;
+  }
+  renderHome(appContainer());
 }
 
-defineRoute('', renderHome);
+defineRoute('', renderHomeRoute);
+defineRoute('onboarding', () => renderOnboarding(appContainer()));
 defineRoute('debug', renderDebug);
-defineRoute('reading/:id', (params) => {
-  renderExercise(document.getElementById('app'), params.id);
-});
-defineRoute('result/:id', renderResultPlaceholder);
+defineRoute('reading', () => renderList(appContainer()));
+defineRoute('reading/:id', (params) => renderExercise(appContainer(), params.id));
+defineRoute('result/:id', (params) => renderResult(appContainer(), params.id));
 defineRoute('notFound', renderNotFound);
 
 start();
