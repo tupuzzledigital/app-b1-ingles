@@ -1,0 +1,5 @@
+id,titulo,examen,tema,dificultad,texto,tipo,preguntas
+RD201,"",PET,travel,2,"This text has no title, which is a required field.",multiple_choice,"[{""q"":""Question?"",""options"":[""A"",""B""],""answer"":0}]"
+RD202,"Broken Questions",EOI,work,1,"This text has malformed JSON in the preguntas column.",true_false,"[{""q"":""Question?"" ""options"":[""True"",""False""] ""answer"":0}]"
+RD203,"Unsupported Exercise Type",PET,lifestyle,2,"This text declares an exercise type that does not exist.",essay,"[{""q"":""Question?"",""options"":[""A"",""B""],""answer"":0}]"
+RD204,"Answer Out of Bounds",AMBOS,health,2,"This text has an answer index that does not exist among the options.",multiple_choice,"[{""q"":""Question?"",""options"":[""A"",""B"",""C""],""answer"":10}]"
